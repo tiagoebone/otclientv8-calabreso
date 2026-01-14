@@ -76,12 +76,14 @@ function ProtocolLogin:sendLoginPacket()
     msg:addU32(xteaKey[4])
   end
 
-  if g_game.getFeature(GameAccountNames) then
-    msg:addString(self.accountName)
-  else
-    msg:addU32(tonumber(self.accountName))
-  end
+  -- Alterado para aceitar account name como string
+  -- if g_game.getFeature(GameAccountNames) then
+  --   msg:addString(self.accountName)
+  -- else
+  --   msg:addU32(tonumber(self.accountName))
+  -- end
 
+  msg:addString(self.accountName)
   msg:addString(self.accountPassword)
 
   if self.getLoginExtendedData then
@@ -221,6 +223,9 @@ end
 function ProtocolLogin:parseCharacterList(msg)
   local characters = {}
 
+  local accountNumber = msg:getU32()
+  G.account = tostring(accountNumber)
+
   if g_game.getProtocolVersion() > 1010 then
     local worlds = {}
 
@@ -261,6 +266,11 @@ function ProtocolLogin:parseCharacterList(msg)
 
       characters[i] = character
     end
+  end
+
+  local email = msg:getString()
+  if email and email:find("@") then
+    G.email = email
   end
 
   local account = {}

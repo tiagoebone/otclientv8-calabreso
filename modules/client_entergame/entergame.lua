@@ -36,9 +36,11 @@ end
 
 local function onCharacterList(protocol, characters, account, otui)
   if rememberPasswordBox:isChecked() then
+    local email = g_crypt.encrypt(G.email)
     local account = g_crypt.encrypt(G.account)
     local password = g_crypt.encrypt(G.password)
 
+    g_settings.set('email', email)
     g_settings.set('account', account)
     g_settings.set('password', password)
   else
@@ -108,8 +110,8 @@ local function validateThings(things)
         if localChecksum ~= thingdata[2]:lower() and #thingdata[2] > 1 then
           if g_resources.isLoadedFromArchive() then -- ignore checksum if it's test/debug version
             incorrectThings = incorrectThings ..
-            "Invalid checksum of file: " ..
-            thingdata[1] .. " (is " .. localChecksum .. ", should be " .. thingdata[2]:lower() .. ")\n"
+                "Invalid checksum of file: " ..
+                thingdata[1] .. " (is " .. localChecksum .. ", should be " .. thingdata[2]:lower() .. ")\n"
           end
         end
       end
@@ -333,6 +335,7 @@ function EnterGame.init()
     serverSelectorPanel:setOn(false)
   end
 
+  local email = g_crypt.decrypt(g_settings.get('email'))
   local account = g_crypt.decrypt(g_settings.get('account'))
   local password = g_crypt.decrypt(g_settings.get('password'))
   local server = g_settings.get('server')
@@ -351,8 +354,14 @@ function EnterGame.init()
   end
 
   enterGame:getChildById('accountPasswordTextEdit'):setText(password)
-  enterGame:getChildById('accountNameTextEdit'):setText(account)
-  rememberPasswordBox:setChecked(#account > 0)
+
+  if email and email ~= "" then
+    enterGame:getChildById('accountNameTextEdit'):setText(email)
+  else
+    enterGame:getChildById('accountNameTextEdit'):setText(account)
+  end
+
+  rememberPasswordBox:setChecked(#account > 0 or #email > 0)
 
   Keybind.new("Misc.", "Change Character", "Ctrl+G", "")
   Keybind.bind("Misc.", "Change Character", {
@@ -462,6 +471,7 @@ function EnterGame.doLogin(account, password, token, host)
     return
   end
 
+  G.email = account or enterGame:getChildById('accountNameTextEdit'):getText()
   G.account = account or enterGame:getChildById('accountNameTextEdit'):getText()
   G.password = password or enterGame:getChildById('accountPasswordTextEdit'):getText()
   G.authenticatorToken = token or enterGame:getChildById('accountTokenTextEdit'):getText()
