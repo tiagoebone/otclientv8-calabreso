@@ -1,4 +1,4 @@
-CharacterList = { }
+CharacterList = {}
 
 -- private variables
 local charactersWindow
@@ -25,19 +25,22 @@ local function tryLogin(charInfo, tries)
     if tries == 1 then
       g_game.safeLogout()
     end
-    loginEvent = scheduleEvent(function() tryLogin(charInfo, tries+1) end, 100)
+    loginEvent = scheduleEvent(function() tryLogin(charInfo, tries + 1) end, 100)
     return
   end
 
   CharacterList.hide()
-  g_game.loginWorld(G.account, G.password, charInfo.worldName, charInfo.worldHost, charInfo.worldPort, charInfo.characterName, G.authenticatorToken, G.sessionKey)
+  g_game.loginWorld(G.account, G.password, charInfo.worldName, charInfo.worldHost, charInfo.worldPort,
+    charInfo.characterName, G.authenticatorToken, G.sessionKey)
   g_logger.info("Login to " .. charInfo.worldHost .. ":" .. charInfo.worldPort)
   loadBox = displayCancelBox(tr('Please wait'), tr('Connecting to game server...'))
-  connect(loadBox, { onCancel = function()
-                                  loadBox = nil
-                                  g_game.cancelLogin()
-                                  CharacterList.show()
-                                end })
+  connect(loadBox, {
+    onCancel = function()
+      loadBox = nil
+      g_game.cancelLogin()
+      CharacterList.show()
+    end
+  })
 
   -- save last used character
   g_settings.set('last-used-character', charInfo.characterName)
@@ -57,7 +60,8 @@ local function updateWait(timeStart, timeEnd)
       local label = waitingWindow:getChildById('timeLabel')
       label:setText(tr('Trying to reconnect in %s seconds.', timeStr))
 
-      updateWaitEvent = scheduleEvent(function() updateWait(timeStart, timeEnd) end, 1000 * progressBar:getPercentPixels() / 100 * (timeEnd - timeStart))
+      updateWaitEvent = scheduleEvent(function() updateWait(timeStart, timeEnd) end,
+        1000 * progressBar:getPercentPixels() / 100 * (timeEnd - timeStart))
       return true
     end
   end
@@ -81,10 +85,12 @@ local function resendWait()
     if charactersWindow then
       local selected = characterList:getFocusedChild()
       if selected then
-        local charInfo = { worldHost = selected.worldHost,
-                           worldPort = selected.worldPort,
-                           worldName = selected.worldName,
-                           characterName = selected.characterName }
+        local charInfo = {
+          worldHost = selected.worldHost,
+          worldPort = selected.worldPort,
+          worldName = selected.worldName,
+          characterName = selected.characterName
+        }
         tryLogin(charInfo)
       end
     end
@@ -116,7 +122,8 @@ end
 function onGameLoginToken(unknown)
   CharacterList.destroyLoadBox()
   -- TODO: make it possible to enter a new token here / prompt token
-  errorBox = displayErrorBox(tr("Two-Factor Authentification"), 'A new authentification token is required.\nPlease login again.')
+  errorBox = displayErrorBox(tr("Two-Factor Authentification"),
+    'A new authentification token is required.\nPlease login again.')
   errorBox.onOk = function()
     errorBox = nil
     EnterGame.show()
@@ -126,7 +133,8 @@ end
 function onGameConnectionError(message, code)
   CharacterList.destroyLoadBox()
   if (not g_game.isOnline() or code ~= 2) and not errorBox then -- code 2 is normal disconnect, end of file
-    local text = translateNetworkError(code, g_game.getProtocolGame() and g_game.getProtocolGame():isConnecting(), message)
+    local text = translateNetworkError(code, g_game.getProtocolGame() and g_game.getProtocolGame():isConnecting(),
+      message)
     errorBox = displayErrorBox(tr("Connection Error"), text)
     errorBox.onOk = function()
       errorBox = nil
@@ -142,7 +150,7 @@ function onGameUpdateNeeded(signature)
   errorBox.onOk = function()
     errorBox = nil
     CharacterList.showAgain()
-  end  
+  end
 end
 
 function onGameEnd()
@@ -159,12 +167,12 @@ function scheduleAutoReconnect()
     return
   end
   if autoReconnectEvent then
-    removeEvent(autoReconnectEvent)    
+    removeEvent(autoReconnectEvent)
   end
   autoReconnectEvent = scheduleEvent(executeAutoReconnect, 2500)
 end
 
-function executeAutoReconnect()  
+function executeAutoReconnect()
   if not autoReconnectButton or not autoReconnectButton:isOn() or g_game.isOnline() then
     return
   end
@@ -193,7 +201,7 @@ function CharacterList.init()
 end
 
 function CharacterList.terminate()
- if USE_NEW_ENERGAME then return end
+  if USE_NEW_ENERGAME then return end
   disconnect(g_game, { onLoginError = onGameLoginError })
   disconnect(g_game, { onLoginToken = onGameLoginToken })
   disconnect(g_game, { onUpdateNeeded = onGameUpdateNeeded })
@@ -255,9 +263,9 @@ function CharacterList.create(characters, account, otui)
   characterList:destroyChildren()
   local accountStatusLabel = charactersWindow:getChildById('accountStatusLabel')
   local focusLabel
-  for i,characterInfo in ipairs(characters) do
+  for i, characterInfo in ipairs(characters) do
     local widget = g_ui.createWidget('CharacterWidget', characterList)
-    for key,value in pairs(characterInfo) do
+    for key, value in pairs(characterInfo) do
       local subWidget = widget:getChildById(key)
       if subWidget then
         if key == 'outfit' then -- it's an exception
@@ -280,7 +288,10 @@ function CharacterList.create(characters, account, otui)
     widget.worldHost = characterInfo.worldIp
     widget.worldPort = characterInfo.worldPort
 
-    connect(widget, { onDoubleClick = function () CharacterList.doLogin() return true end } )
+    connect(widget, { onDoubleClick = function()
+      CharacterList.doLogin()
+      return true
+    end })
 
     if i == 1 or (g_settings.get('last-used-character') == widget.characterName and g_settings.get('last-used-world') == widget.worldName) then
       focusLabel = widget
@@ -291,7 +302,7 @@ function CharacterList.create(characters, account, otui)
     characterList:focusChild(focusLabel, KeyboardFocusReason)
     addEvent(function() characterList:ensureChildVisible(focusLabel) end)
   end
-  
+
   characterList.onChildFocusChange = function()
     removeEvent(autoReconnectEvent)
     autoReconnectEvent = nil
@@ -320,7 +331,7 @@ function CharacterList.create(characters, account, otui)
   else
     accountStatusLabel:setOn(false)
   end
-  
+
   autoReconnectButton.onClick = function(widget)
     local autoReconnect = not g_settings.getBoolean('autoReconnect', true)
     autoReconnectButton:setOn(autoReconnect)
@@ -343,7 +354,7 @@ function CharacterList.show()
   charactersWindow:show()
   charactersWindow:raise()
   charactersWindow:focus()
-  
+
   local autoReconnect = g_settings.getBoolean('autoReconnect', true)
   autoReconnectButton:setOn(autoReconnect)
 end
@@ -379,10 +390,12 @@ function CharacterList.doLogin()
 
   local selected = characterList:getFocusedChild()
   if selected then
-    local charInfo = { worldHost = selected.worldHost,
-                       worldPort = selected.worldPort,
-                       worldName = selected.worldName,
-                       characterName = selected.characterName }
+    local charInfo = {
+      worldHost = selected.worldHost,
+      worldPort = selected.worldPort,
+      worldName = selected.worldName,
+      characterName = selected.characterName
+    }
     charactersWindow:hide()
     if loginEvent then
       removeEvent(loginEvent)

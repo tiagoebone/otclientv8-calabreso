@@ -19,10 +19,10 @@ function ProtocolGame:onExtendedOpcode(opcode, buffer)
   if callback then
     callback(self, opcode, buffer)
   end
-  
+
   callback = extendedJSONCallbacks[opcode]
   if callback then
-    local status = buffer:sub(1,1) -- O - just one message, S - start, P - part, E - end
+    local status = buffer:sub(1, 1) -- O - just one message, S - start, P - part, E - end
     local data = buffer:sub(2)
     if status ~= "E" and status ~= "P" then
       extendedJSONData[opcode] = ""
@@ -120,18 +120,18 @@ function ProtocolGame:sendExtendedJSONOpcode(opcode, data)
   if type(data) ~= "table" then
     error('Invalid data type, should be table')
   end
-  
-  local buffer = json.encode(data)  
+
+  local buffer = json.encode(data)
   local s = {}
-  for i=1, #buffer, maxPacketSize do
-     s[#s+1] = buffer:sub(i,i+maxPacketSize - 1)
+  for i = 1, #buffer, maxPacketSize do
+    s[#s + 1] = buffer:sub(i, i + maxPacketSize - 1)
   end
   if #s == 1 then
     self:sendExtendedOpcode(opcode, s[1])
     return
   end
   self:sendExtendedOpcode(opcode, "S" .. s[1])
-  for i=2,#s - 1 do
+  for i = 2, #s - 1 do
     self:sendExtendedOpcode(opcode, "P" .. s[i])
   end
   self:sendExtendedOpcode(opcode, "E" .. s[#s])

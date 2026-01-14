@@ -15,13 +15,8 @@ Services = {
 
 -- Servers accept http login url, websocket login url or ip:port:version
 Servers = {
---[[  OTClientV8 = "http://otclient.ovh/api/login.php",
-  OTClientV8proxy = "http://otclient.ovh/api/login.php?proxy=1",
-  OTClientV8c = "otclient.ovh:7171:1099:25:30:80:90",
-  OTClientV8Test = "http://otclient.ovh/api/login2.php",
-  Evoulinia = "evolunia.net:7171:1098",
-  GarneraTest = "garnera-global.net:7171:1100",
-  LocalTestServ = "127.0.0.1:7171:1098:110:30:93"  ]]
+  Calabreso = "181.215.236.209:7171:800",
+  TestServer = "127.0.0.1:7171:800"
 }
 
 --Server = "ws://otclient.ovh:3000/"
@@ -34,7 +29,14 @@ g_app.setName("OTCv8")
 
 -- print first terminal message
 g_logger.info(os.date("== application started at %b %d %Y %X"))
-g_logger.info(g_app.getName() .. ' ' .. g_app.getVersion() .. ' rev ' .. g_app.getBuildRevision() .. ' (' .. g_app.getBuildCommit() .. ') made by ' .. g_app.getAuthor() .. ' built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())
+g_logger.info(g_app.getName() ..
+' ' ..
+g_app.getVersion() ..
+' rev ' ..
+g_app.getBuildRevision() ..
+' (' ..
+g_app.getBuildCommit() ..
+') made by ' .. g_app.getAuthor() .. ' built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())
 
 if not g_resources.directoryExists("/data") then
   g_logger.fatal("Data dir doesn't exist.")
@@ -60,7 +62,7 @@ g_resources.setLayout(layout)
 -- load mods
 g_modules.discoverModules()
 g_modules.ensureModuleLoaded("corelib")
-  
+
 local function loadModules()
   -- libraries modules 0-99
   g_modules.autoLoadModules(99)
@@ -84,8 +86,8 @@ if type(Services.crash) == 'string' and Services.crash:len() > 4 and g_modules.g
 end
 
 -- run updater, must use data.zip
-if type(Services.updater) == 'string' and Services.updater:len() > 4 
-  and g_resources.isLoadedFromArchive() and g_modules.getModule("updater") then
+if type(Services.updater) == 'string' and Services.updater:len() > 4
+    and g_resources.isLoadedFromArchive() and g_modules.getModule("updater") then
   g_modules.ensureModuleLoaded("updater")
   return Updater.init(loadModules)
 end

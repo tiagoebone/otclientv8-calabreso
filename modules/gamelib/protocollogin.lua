@@ -40,7 +40,7 @@ function ProtocolLogin:sendLoginPacket()
   msg:addU8(ClientOpcodes.ClientEnterAccount)
   msg:addU16(g_game.getOs())
   if g_game.getCustomProtocolVersion() > 0 then
-    msg:addU16(g_game.getCustomProtocolVersion())  
+    msg:addU16(g_game.getCustomProtocolVersion())
   else
     msg:addU16(g_game.getProtocolVersion())
   end
@@ -91,7 +91,7 @@ function ProtocolLogin:sendLoginPacket()
     msg:addString("OTCv8")
     local version = g_app.getVersion():split(" ")[1]:gsub("%.", "")
     if version:len() == 2 then
-      version = version .. "0" 
+      version = version .. "0"
     end
     msg:addU16(tonumber(version))
   end
@@ -183,18 +183,18 @@ function ProtocolLogin:onRecv(msg)
       self:parseExtendedCharacterList(msg)
     elseif opcode == LoginServerUpdate then
       local signature = msg:getString()
-      signalcall(self.onUpdateNeeded, self, signature)      
+      signalcall(self.onUpdateNeeded, self, signature)
     elseif opcode == LoginServerSessionKey then
       self:parseSessionKey(msg)
     elseif opcode == LoginServerProxyList then
       local proxies = {}
       local proxiesCount = msg:getU8()
-      for i=1, proxiesCount do
+      for i = 1, proxiesCount do
         local host = msg:getString()
         local port = msg:getU16()
-        local priority = msg:getU16()        
-        table.insert(proxies, {host=host, port=port, priority=priority})
-      end      
+        local priority = msg:getU16()
+        table.insert(proxies, { host = host, port = port, priority = priority })
+      end
       signalcall(self.onProxyList, self, proxies)
     else
       self:parseOpcode(opcode, msg)
@@ -225,7 +225,7 @@ function ProtocolLogin:parseCharacterList(msg)
     local worlds = {}
 
     local worldsCount = msg:getU8()
-    for i=1, worldsCount do
+    for i = 1, worldsCount do
       local world = {}
       local worldId = msg:getU8()
       world.worldName = msg:getString()
@@ -236,7 +236,7 @@ function ProtocolLogin:parseCharacterList(msg)
     end
 
     local charactersCount = msg:getU8()
-    for i=1, charactersCount do
+    for i = 1, charactersCount do
       local character = {}
       local worldId = msg:getU8()
       character.name = msg:getString()
@@ -246,10 +246,9 @@ function ProtocolLogin:parseCharacterList(msg)
       character.previewState = worlds[worldId].previewState
       characters[i] = character
     end
-
   else
     local charactersCount = msg:getU8()
-    for i=1,charactersCount do
+    for i = 1, charactersCount do
       local character = {}
       character.name = msg:getString()
       character.worldName = msg:getString()

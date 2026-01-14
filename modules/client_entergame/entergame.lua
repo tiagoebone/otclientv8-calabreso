@@ -1,4 +1,4 @@
-EnterGame = { }
+EnterGame = {}
 
 -- private variables
 local loadBox
@@ -16,7 +16,8 @@ local serverSelector
 local clientVersionSelector
 local serverHostTextEdit
 local rememberPasswordBox
-local protos = {"740", "760", "772", "792", "800", "810", "854", "860", "870", "910", "961", "1000", "1077", "1090", "1096", "1098", "1099", "1100", "1200", "1220"}
+local protos = { "740", "760", "772", "792", "800", "810", "854", "860", "870", "910", "961", "1000", "1077", "1090",
+  "1096", "1098", "1099", "1100", "1200", "1220" }
 
 local checkedByUpdater = {}
 local waitingForHttpResults = 0
@@ -54,7 +55,7 @@ local function onCharacterList(protocol, characters, account, otui)
     loadBox:destroy()
     loadBox = nil
   end
-    
+
   CharacterList.create(characters, account, otui)
   CharacterList.show()
 
@@ -72,7 +73,8 @@ local function onProxyList(protocol, proxies)
 
   for _, proxy in ipairs(proxies) do
     if proxy["destinationPort"] ~= nil then
-      g_proxy.addExtendedProxy(proxy["host"], tonumber(proxy["port"]), tonumber(proxy["destinationPort"]), tonumber(proxy["priority"]))
+      g_proxy.addExtendedProxy(proxy["host"], tonumber(proxy["port"]), tonumber(proxy["destinationPort"]),
+        tonumber(proxy["priority"]))
     else
       g_proxy.addProxy(proxy["host"], tonumber(proxy["port"]), tonumber(proxy["priority"]))
     end
@@ -81,12 +83,12 @@ end
 
 local function parseFeatures(features)
   for feature_id, value in pairs(features) do
-      if value == "1" or value == "true" or value == true then
-        g_game.enableFeature(feature_id)
-      else
-        g_game.disableFeature(feature_id)
-      end
-  end  
+    if value == "1" or value == "true" or value == true then
+      g_game.enableFeature(feature_id)
+    else
+      g_game.disableFeature(feature_id)
+    end
+  end
 end
 
 local function validateThings(things)
@@ -105,7 +107,9 @@ local function validateThings(things)
         local localChecksum = g_resources.fileChecksum("/things/" .. thingdata[1]):lower()
         if localChecksum ~= thingdata[2]:lower() and #thingdata[2] > 1 then
           if g_resources.isLoadedFromArchive() then -- ignore checksum if it's test/debug version
-            incorrectThings = incorrectThings .. "Invalid checksum of file: " .. thingdata[1] .. " (is " .. localChecksum .. ", should be " .. thingdata[2]:lower() .. ")\n"
+            incorrectThings = incorrectThings ..
+            "Invalid checksum of file: " ..
+            thingdata[1] .. " (is " .. localChecksum .. ", should be " .. thingdata[2]:lower() .. ")\n"
           end
         end
       end
@@ -115,9 +119,11 @@ local function validateThings(things)
     g_settings.setNode("things", {})
   end
   if missingFiles then
-    incorrectThings = incorrectThings .. "\nYou should open data/things and create directory " .. versionForMissingFiles .. 
-    ".\nIn this directory (data/things/" .. versionForMissingFiles .. ") you should put missing\nfiles (Tibia.dat and Tibia.spr/Tibia.cwm) " ..
-    "from correct Tibia version."
+    incorrectThings = incorrectThings ..
+        "\nYou should open data/things and create directory " .. versionForMissingFiles ..
+        ".\nIn this directory (data/things/" ..
+        versionForMissingFiles .. ") you should put missing\nfiles (Tibia.dat and Tibia.spr/Tibia.cwm) " ..
+        "from correct Tibia version."
   end
   return incorrectThings
 end
@@ -139,21 +145,21 @@ local function onTibia12HTTPResult(session, playdata)
   if session["premiumuntil"] > g_clock.seconds() then
     account.subStatus = math.floor((session["premiumuntil"] - g_clock.seconds()) / 86400)
   end
-    
+
   local things = {
-    data = {G.clientVersion .. "/Tibia.dat", ""},
-    sprites = {G.clientVersion .. "/Tibia.cwm", ""},
+    data = { G.clientVersion .. "/Tibia.dat", "" },
+    sprites = { G.clientVersion .. "/Tibia.cwm", "" },
   }
 
   local incorrectThings = validateThings(things)
   if #incorrectThings > 0 then
     things = {
-      data = {G.clientVersion .. "/Tibia.dat", ""},
-      sprites = {G.clientVersion .. "/Tibia.spr", ""},
-    }  
+      data = { G.clientVersion .. "/Tibia.dat", "" },
+      sprites = { G.clientVersion .. "/Tibia.spr", "" },
+    }
     incorrectThings = validateThings(things)
   end
-  
+
   if #incorrectThings > 0 then
     g_logger.error(incorrectThings)
     if Updater and not checkedByUpdater[G.clientVersion] then
@@ -166,9 +172,9 @@ local function onTibia12HTTPResult(session, playdata)
       return EnterGame.onError(incorrectThings)
     end
   end
-  
+
   onSessionKey(nil, session["sessionkey"])
-  
+
   for _, world in pairs(playdata["worlds"]) do
     worlds[world.id] = {
       name = world.name,
@@ -176,7 +182,7 @@ local function onTibia12HTTPResult(session, playdata)
       address = world.externaladdressunprotected or world.externaladdressprotected or world.externalport
     }
   end
-  
+
   for _, character in pairs(playdata["characters"]) do
     local world = worlds[character.worldid]
     if world then
@@ -188,30 +194,30 @@ local function onTibia12HTTPResult(session, playdata)
       })
     end
   end
-  
+
   -- proxies
   if g_proxy then
     g_proxy.clear()
     onProxyList(nil, playdata["proxies"])
   end
-  
+
   g_game.setCustomProtocolVersion(0)
   g_game.chooseRsa(G.host)
   g_game.setClientVersion(G.clientVersion)
   g_game.setProtocolVersion(g_game.getClientProtocolVersion(G.clientVersion))
-  g_game.setCustomOs(-1) -- disable
+  g_game.setCustomOs(-1)  -- disable
   if not g_game.getFeature(GameExtendedOpcode) then
     g_game.setCustomOs(5) -- set os to windows if opcodes are disabled
   end
-  
-  onCharacterList(nil, characters, account, nil)  
+
+  onCharacterList(nil, characters, account, nil)
 end
 
 local function onHTTPResult(data, err)
   if waitingForHttpResults == 0 then
     return
   end
-  
+
   waitingForHttpResults = waitingForHttpResults - 1
   if err and waitingForHttpResults > 0 then
     return -- ignore, wait for other requests
@@ -220,21 +226,21 @@ local function onHTTPResult(data, err)
   if err then
     return EnterGame.onError(err)
   end
-  waitingForHttpResults = 0 
+  waitingForHttpResults = 0
   if data['error'] and data['error']:len() > 0 then
     return EnterGame.onLoginError(data['error'])
   elseif data['errorMessage'] and data['errorMessage']:len() > 0 then
     return EnterGame.onLoginError(data['errorMessage'])
   end
-  
+
   if type(data["session"]) == "table" and type(data["playdata"]) == "table" then
     return onTibia12HTTPResult(data["session"], data["playdata"])
-  end  
-  
+  end
+
   local characters = data["characters"]
   local account = data["account"]
   local session = data["session"]
- 
+
   local version = data["version"]
   local things = data["things"]
   local customProtocol = data["customProtocol"]
@@ -249,7 +255,7 @@ local function onHTTPResult(data, err)
     g_logger.info(incorrectThings)
     return EnterGame.onError(incorrectThings)
   end
-  
+
   -- custom protocol
   g_game.setCustomProtocolVersion(0)
   if customProtocol ~= nil then
@@ -258,20 +264,20 @@ local function onHTTPResult(data, err)
       g_game.setCustomProtocolVersion(customProtocol)
     end
   end
-  
+
   -- force player settings
   if settings ~= nil then
     for option, value in pairs(settings) do
       modules.client_options.setOption(option, value, true)
     end
   end
-    
+
   -- version
   G.clientVersion = version
   g_game.setClientVersion(version)
-  g_game.setProtocolVersion(g_game.getClientProtocolVersion(version))  
+  g_game.setProtocolVersion(g_game.getClientProtocolVersion(version))
   g_game.setCustomOs(-1) -- disable
-  
+
   if rsa ~= nil then
     g_game.setRsa(rsa)
   end
@@ -283,14 +289,14 @@ local function onHTTPResult(data, err)
   if session ~= nil and session:len() > 0 then
     onSessionKey(nil, session)
   end
-  
+
   -- proxies
   if g_proxy then
     g_proxy.clear()
     onProxyList(nil, proxies)
   end
-  
-  onCharacterList(nil, characters, account, nil)  
+
+  onCharacterList(nil, characters, account, nil)
 end
 
 
@@ -301,24 +307,24 @@ function EnterGame.init()
   if LOGPASS ~= nil then
     logpass = g_ui.loadUI('logpass', enterGame:getParent())
   end
-  
+
   serverSelectorPanel = enterGame:getChildById('serverSelectorPanel')
   customServerSelectorPanel = enterGame:getChildById('customServerSelectorPanel')
-  
+
   serverSelector = serverSelectorPanel:getChildById('serverSelector')
   rememberPasswordBox = enterGame:getChildById('rememberPasswordBox')
   serverHostTextEdit = customServerSelectorPanel:getChildById('serverHostTextEdit')
   clientVersionSelector = customServerSelectorPanel:getChildById('clientVersionSelector')
-  
-  if Servers ~= nil then 
-    for name,server in pairs(Servers) do
+
+  if Servers ~= nil then
+    for name, server in pairs(Servers) do
       serverSelector:addOption(name)
     end
   end
   if serverSelector:getOptionsCount() == 0 or ALLOW_CUSTOM_SERVERS then
-    serverSelector:addOption(tr("Another"))    
-  end  
-  for i,proto in pairs(protos) do
+    serverSelector:addOption(tr("Another"))
+  end
+  for i, proto in pairs(protos) do
     clientVersionSelector:addOption(proto)
   end
 
@@ -326,7 +332,7 @@ function EnterGame.init()
     enterGame:setHeight(enterGame:getHeight() - serverSelectorPanel:getHeight())
     serverSelectorPanel:setOn(false)
   end
-  
+
   local account = g_crypt.decrypt(g_settings.get('account'))
   local password = g_crypt.decrypt(g_settings.get('password'))
   local server = g_settings.get('server')
@@ -343,7 +349,7 @@ function EnterGame.init()
     server = ""
     host = ""
   end
-  
+
   enterGame:getChildById('accountPasswordTextEdit'):setText(password)
   enterGame:getChildById('accountNameTextEdit'):setText(account)
   rememberPasswordBox:setChecked(#account > 0)
@@ -374,7 +380,7 @@ function EnterGame.terminate()
     logpass:destroy()
     logpass = nil
   end
-  
+
   enterGame:destroy()
   if loadBox then
     loadBox:destroy()
@@ -433,7 +439,7 @@ function EnterGame.onServerChange()
   if server == tr("Another") then
     if not customServerSelectorPanel:isOn() then
       serverHostTextEdit:setText("")
-      customServerSelectorPanel:setOn(true)  
+      customServerSelectorPanel:setOn(true)
       enterGame:setHeight(enterGame:getHeight() + customServerSelectorPanel:getHeight())
     end
   elseif customServerSelectorPanel:isOn() then
@@ -455,18 +461,18 @@ function EnterGame.doLogin(account, password, token, host)
     connect(errorBox, { onOk = EnterGame.show })
     return
   end
-  
+
   G.account = account or enterGame:getChildById('accountNameTextEdit'):getText()
   G.password = password or enterGame:getChildById('accountPasswordTextEdit'):getText()
   G.authenticatorToken = token or enterGame:getChildById('accountTokenTextEdit'):getText()
   G.stayLogged = true
   G.server = serverSelector:getText():trim()
   G.host = host or serverHostTextEdit:getText()
-  G.clientVersion = tonumber(clientVersionSelector:getText())  
- 
+  G.clientVersion = tonumber(clientVersionSelector:getText())
+
   if not rememberPasswordBox:isChecked() then
     g_settings.set('account', G.account)
-    g_settings.set('password', G.password)  
+    g_settings.set('password', G.password)
   end
   g_settings.set('host', G.host)
   g_settings.set('server', G.server)
@@ -476,17 +482,17 @@ function EnterGame.doLogin(account, password, token, host)
   local server_params = G.host:split(":")
   if G.host:lower():find("http") ~= nil then
     if #server_params >= 4 then
-      G.host = server_params[1] .. ":" .. server_params[2] .. ":" .. server_params[3] 
+      G.host = server_params[1] .. ":" .. server_params[2] .. ":" .. server_params[3]
       G.clientVersion = tonumber(server_params[4])
     elseif #server_params >= 3 then
       if tostring(tonumber(server_params[3])) == server_params[3] then
-        G.host = server_params[1] .. ":" .. server_params[2] 
+        G.host = server_params[1] .. ":" .. server_params[2]
         G.clientVersion = tonumber(server_params[3])
       end
     end
-    return EnterGame.doLoginHttp()      
+    return EnterGame.doLoginHttp()
   end
-  
+
   local server_ip = server_params[1]
   local server_port = 7171
   if #server_params >= 2 then
@@ -496,20 +502,20 @@ function EnterGame.doLogin(account, password, token, host)
     G.clientVersion = tonumber(server_params[3])
   end
   if type(server_ip) ~= 'string' or server_ip:len() <= 3 or not server_port or not G.clientVersion then
-    return EnterGame.onError("Invalid server, it should be in format IP:PORT or it should be http url to login script")  
+    return EnterGame.onError("Invalid server, it should be in format IP:PORT or it should be http url to login script")
   end
-  
+
   local things = {
-    data = {G.clientVersion .. "/Tibia.dat", ""},
-    sprites = {G.clientVersion .. "/Tibia.cwm", ""},
+    data = { G.clientVersion .. "/Tibia.dat", "" },
+    sprites = { G.clientVersion .. "/Tibia.cwm", "" },
   }
-  
+
   local incorrectThings = validateThings(things)
   if #incorrectThings > 0 then
     things = {
-      data = {G.clientVersion .. "/Tibia.dat", ""},
-      sprites = {G.clientVersion .. "/Tibia.spr", ""},
-    }  
+      data = { G.clientVersion .. "/Tibia.dat", "" },
+      sprites = { G.clientVersion .. "/Tibia.spr", "" },
+    }
     incorrectThings = validateThings(things)
   end
   if #incorrectThings > 0 then
@@ -534,11 +540,13 @@ function EnterGame.doLogin(account, password, token, host)
 
   EnterGame.hide()
   loadBox = displayCancelBox(tr('Please wait'), tr('Connecting to login server...'))
-  connect(loadBox, { onCancel = function(msgbox)
-                                  loadBox = nil
-                                  protocolLogin:cancelLogin()
-                                  EnterGame.show()
-                                end })
+  connect(loadBox, {
+    onCancel = function(msgbox)
+      loadBox = nil
+      protocolLogin:cancelLogin()
+      EnterGame.show()
+    end
+  })
 
   if G.clientVersion == 1000 then -- some people don't understand that tibia 10 uses 1100 protocol
     G.clientVersion = 1100
@@ -557,12 +565,12 @@ function EnterGame.doLogin(account, password, token, host)
   for i = 4, #server_params do
     g_game.enableFeature(tonumber(server_params[i]))
   end
-  
+
   -- proxies
   if g_proxy then
     g_proxy.clear()
   end
-  
+
   if modules.game_things.isLoaded() then
     g_logger.info("Connecting to: " .. server_ip .. ":" .. server_port)
     protocolLogin:login(server_ip, server_port, G.account, G.password, G.authenticatorToken, G.stayLogged)
@@ -575,15 +583,17 @@ end
 
 function EnterGame.doLoginHttp()
   if G.host == nil or G.host:len() < 10 then
-    return EnterGame.onError("Invalid server url: " .. G.host)    
+    return EnterGame.onError("Invalid server url: " .. G.host)
   end
 
   loadBox = displayCancelBox(tr('Please wait'), tr('Connecting to login server...'))
-  connect(loadBox, { onCancel = function(msgbox)
-                                  loadBox = nil
-                                  EnterGame.show()
-                                end })                                
-                              
+  connect(loadBox, {
+    onCancel = function(msgbox)
+      loadBox = nil
+      EnterGame.show()
+    end
+  })
+
   local data = {
     type = "login",
     account = G.account,
@@ -596,18 +606,18 @@ function EnterGame.doLoginHttp()
     uid = G.UUID,
     stayloggedin = true
   }
-  
+
   local server = serverSelector:getText()
   if Servers and Servers[server] ~= nil then
     if type(Servers[server]) == "table" then
-      local urls = Servers[server]      
+      local urls = Servers[server]
       waitingForHttpResults = #urls
       for _, url in ipairs(urls) do
         HTTP.postJSON(url, data, onHTTPResult)
       end
     else
       waitingForHttpResults = 1
-      HTTP.postJSON(G.host, data, onHTTPResult)    
+      HTTP.postJSON(G.host, data, onHTTPResult)
     end
   end
   EnterGame.hide()
