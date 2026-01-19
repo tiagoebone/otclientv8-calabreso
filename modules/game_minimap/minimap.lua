@@ -11,7 +11,7 @@ function init()
   minimapWindow:setContentMinimumHeight(64)
 
   if not minimapWindow.forceOpen then
-    minimapButton = modules.client_topmenu.addRightGameToggleButton('minimapButton', 
+    minimapButton = modules.client_topmenu.addRightGameToggleButton('minimapButton',
       tr('Minimap') .. ' (Ctrl+M)', '/images/topbuttons/minimap', toggle)
     minimapButton:setOn(true)
   end
@@ -183,17 +183,107 @@ function loadMap()
   loaded = false
 
   local minimapFile = '/minimap.otmm'
-  local dataMinimapFile = '/data' .. minimapFile
   local versionedMinimapFile = '/minimap' .. clientVersion .. '.otmm'
-  if g_resources.fileExists(dataMinimapFile) then
-    loaded = g_minimap.loadOtmm(dataMinimapFile)
+  local dataMinimapFile = '/data/minimap' .. versionedMinimapFile
+
+  print(string.format("Checking minimap files - AppData: %s, Data: %s", versionedMinimapFile, dataMinimapFile))
+
+  -- Função auxiliar para obter o tamanho do arquivo
+  -- Como arquivos .otmm podem estar criptografados/comprimidos, tentamos ler o tamanho
+  -- mas se falhar, marcamos como -1 para tentar carregar diretamente depois
+  local function getFileSize(filePath)
+    if not g_resources.fileExists(filePath) then
+      print(string.format("File does not exist: %s", filePath))
+      return 0
+    end
+
+    -- Tenta ler o arquivo para obter o tamanho
+    local success, content = pcall(function() return g_resources.readFileContents(filePath) end)
+    if success and content and type(content) == "string" then
+      local size = #content
+      print(string.format("File size for %s: %d bytes", filePath, size))
+      return size
+    else
+      -- Arquivo pode estar criptografado/comprimido, não conseguimos ler diretamente
+      -- Mas sabemos que existe, então retornamos -1 para indicar que devemos tentar carregar
+      print(string.format("File exists but could not read size for %s (may be encrypted/compressed)", filePath))
+      return -1 -- -1 indica que o arquivo existe mas não conseguimos ler o tamanho
+    end
   end
-  if not loaded and g_resources.fileExists(versionedMinimapFile) then
-    loaded = g_minimap.loadOtmm(versionedMinimapFile)
+
+  -- Verificar existência dos arquivos
+  local appdataExists = g_resources.fileExists(versionedMinimapFile)
+  local dataExists = g_resources.fileExists(dataMinimapFile)
+
+  print(string.format("File existence - AppData: %s, Data: %s",
+    appdataExists and "exists" or "not found",
+    dataExists and "exists" or "not found"))
+
+  -- Comparar tamanhos dos arquivos e carregar o maior
+  local appdataSize = appdataExists and getFileSize(versionedMinimapFile) or 0
+  local dataSize = dataExists and getFileSize(dataMinimapFile) or 0
+
+  print(string.format("File sizes - AppData: %d bytes, Data: %d bytes", appdataSize, dataSize))
+
+  -- Se não conseguimos obter os tamanhos mas os arquivos existem, tenta carregar ambos
+  if (appdataSize == -1 or dataSize == -1) and (appdataExists or dataExists) then
+    print("Could not determine file sizes, trying to load both files to compare...")
+    -- Tenta carregar o de /data/minimap primeiro
+    if dataExists then
+      print("Attempting to load from /data/minimap...")
+      local tempLoaded = g_minimap.loadOtmm(dataMinimapFile)
+      if tempLoaded then
+        print("Successfully loaded from /data/minimap, using this file")
+        loaded = true
+      end
+    end
+    -- Se não carregou de /data/minimap, tenta appdata
+    if not loaded and appdataExists then
+      print("Attempting to load from appdata...")
+      loaded = g_minimap.loadOtmm(versionedMinimapFile)
+      if loaded then
+        print("Successfully loaded from appdata")
+      end
+    end
+  elseif appdataSize > 0 or dataSize > 0 then
+    if dataSize >= appdataSize and dataSize > 0 then
+      -- Prioriza arquivo em /data/minimap se for maior ou igual
+      print(string.format("Loading minimap from /data/minimap (size: %d bytes)", dataSize))
+      loaded = g_minimap.loadOtmm(dataMinimapFile)
+      if loaded then
+        print(string.format("Minimap loaded successfully from /data/minimap%s", versionedMinimapFile))
+      else
+        print(string.format("Failed to load minimap from /data/minimap%s, trying appdata...", versionedMinimapFile))
+        -- Se falhar, tenta carregar do appdata
+        if appdataSize > 0 then
+          loaded = g_minimap.loadOtmm(versionedMinimapFile)
+          if loaded then
+            print(string.format("Minimap loaded successfully from appdata%s", versionedMinimapFile))
+          end
+        end
+      end
+    elseif appdataSize > 0 then
+      print(string.format("Loading minimap from appdata (size: %d bytes)", appdataSize))
+      loaded = g_minimap.loadOtmm(versionedMinimapFile)
+      if loaded then
+        print(string.format("Minimap loaded successfully from appdata%s", versionedMinimapFile))
+      else
+        print(string.format("Failed to load minimap from appdata%s", versionedMinimapFile))
+      end
+    end
+  else
+    print("Both minimap files have size 0 or do not exist")
   end
+
+  -- Fallback para arquivos antigos
   if not loaded and g_resources.fileExists(minimapFile) then
+    print("Loading minimap from fallback location: /minimap.otmm")
     loaded = g_minimap.loadOtmm(minimapFile)
+    if loaded then
+      print("Minimap loaded successfully from /minimap.otmm")
+    end
   end
+
   if not loaded then
     print("Minimap couldn't be loaded, file missing?")
   end
@@ -202,7 +292,7 @@ end
 
 function saveMap()
   local clientVersion = g_game.getClientVersion()
-  local minimapFile = '/minimap' .. clientVersion .. '.otmm' 
+  local minimapFile = '/minimap' .. clientVersion .. '.otmm'
   g_minimap.saveOtmm(minimapFile)
   minimapWidget:save()
 end

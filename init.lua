@@ -1,15 +1,15 @@
 -- CONFIG
-APP_NAME = "otclientv8"  -- important, change it, it's name for config dir and files in appdata
+APP_NAME = "Calabresot"  -- important, change it, it's name for config dir and files in appdata
 APP_VERSION = 1341       -- client version for updater and login to identify outdated client
 DEFAULT_LAYOUT = "retro" -- on android it's forced to "mobile", check code bellow
 
 -- If you don't use updater or other service, set it to updater = ""
 Services = {
-  website = "http://otclient.ovh", -- currently not used
-  updater = "http://otclient.ovh/api/updater.php",
+  website = "https://calabresot.com", -- currently not used
+  updater = "https://calabresot.com/php-api-v2/updater_advanced.php",
   stats = "",
-  crash = "http://otclient.ovh/api/crash.php",
-  feedback = "http://otclient.ovh/api/feedback.php",
+  crash = "",
+  feedback = "",
   status = ""
 }
 
@@ -30,13 +30,13 @@ g_app.setName("OTCv8")
 -- print first terminal message
 g_logger.info(os.date("== application started at %b %d %Y %X"))
 g_logger.info(g_app.getName() ..
-' ' ..
-g_app.getVersion() ..
-' rev ' ..
-g_app.getBuildRevision() ..
-' (' ..
-g_app.getBuildCommit() ..
-') made by ' .. g_app.getAuthor() .. ' built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())
+  ' ' ..
+  g_app.getVersion() ..
+  ' rev ' ..
+  g_app.getBuildRevision() ..
+  ' (' ..
+  g_app.getBuildCommit() ..
+  ') made by ' .. g_app.getAuthor() .. ' built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())
 
 if not g_resources.directoryExists("/data") then
   g_logger.fatal("Data dir doesn't exist.")

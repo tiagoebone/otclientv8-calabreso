@@ -1,10 +1,10 @@
-Updater = { }
+Updater = {}
 
 Updater.maxRetries = 5
 
 --[[
 
-]]--
+]] --
 
 local updaterWindow
 local loadModulesFunction
@@ -12,7 +12,7 @@ local scheduledEvent
 local httpOperationId = 0
 
 local function onLog(level, message, time)
-  if level == LogError then    
+  if level == LogError then
     Updater.error(message)
     g_logger.setOnLog(nil)
   end
@@ -22,7 +22,7 @@ local function initAppWindow()
   if g_resources.getLayout() == "mobile" then
     g_window.setMinimumSize({ width = 640, height = 360 })
   else
-    g_window.setMinimumSize({ width = 800, height = 640 })  
+    g_window.setMinimumSize({ width = 800, height = 640 })
   end
 
   -- window size
@@ -32,8 +32,10 @@ local function initAppWindow()
 
   -- window position, default is the screen center
   local displaySize = g_window.getDisplaySize()
-  local defaultPos = { x = (displaySize.width - size.width)/2,
-                       y = (displaySize.height - size.height)/2 }
+  local defaultPos = {
+    x = (displaySize.width - size.width) / 2,
+    y = (displaySize.height - size.height) / 2
+  }
   local pos = g_settings.getPoint('window-pos', defaultPos)
   pos.x = math.max(pos.x, 0)
   pos.y = math.max(pos.y, 0)
@@ -45,7 +47,7 @@ local function initAppWindow()
 
   g_window.setTitle(g_app.getName())
   g_window.setIcon('/images/clienticon')
-  
+
   if g_app.isMobile() then
     scheduleEvent(function()
       g_app.scale(5.0)
@@ -69,7 +71,7 @@ local function downloadFiles(url, files, index, retries, doneCallback)
   end
   local file = entry[1]
   local file_checksum = entry[2]
-  
+
   if retries > 0 then
     updaterWindow.downloadStatus:setText(tr("Downloading (%i retry):\n%s", retries, file))
   else
@@ -77,9 +79,20 @@ local function downloadFiles(url, files, index, retries, doneCallback)
   end
   updaterWindow.downloadProgress:setPercent(0)
   updaterWindow.mainProgress:setPercent(math.floor(100 * index / #files))
-  
-  httpOperationId = HTTP.download(url .. file, file,
-    function (file, checksum, err)
+
+  -- Construir URL corretamente: garantir que url termina com / e file não começa com /
+  local filePath = file
+  if filePath:sub(1, 1) == "/" then
+    filePath = filePath:sub(2) -- Remove barra inicial do arquivo
+  end
+  local baseUrl = url
+  if baseUrl:sub(-1) ~= "/" then
+    baseUrl = baseUrl .. "/" -- Adiciona barra final na URL se não tiver
+  end
+  local downloadUrl = baseUrl .. filePath
+
+  httpOperationId = HTTP.download(downloadUrl, file,
+    function(file, checksum, err)
       if not err and checksum ~= file_checksum then
         err = "Invalid checksum of: " .. file .. ".\nShould be " .. file_checksum .. ", is: " .. checksum
       end
@@ -95,7 +108,7 @@ local function downloadFiles(url, files, index, retries, doneCallback)
       end
       downloadFiles(url, files, index + 1, 0, doneCallback)
     end,
-    function (progress, speed)
+    function(progress, speed)
       updaterWindow.downloadProgress:setPercent(progress)
       updaterWindow.downloadProgress:setText(speed .. " kbps")
     end)
@@ -107,15 +120,30 @@ local function updateFiles(data, keepCurrentFiles)
     return Updater.error("Invalid data from updater api (not table)")
   end
   if type(data["error"]) == 'string' and data["error"]:len() > 0 then
-    return Updater.error(data["error"])    
+    return Updater.error(data["error"])
   end
   if not data["files"] or type(data["url"]) ~= 'string' or data["url"]:len() < 4 then
     return Updater.error("Invalid data from updater api: " .. json.encode(data, 2))
   end
+
+  -- Validar e normalizar a URL de download
+  local downloadUrl = data["url"]
+  -- Garantir que a URL termina com /
+  if downloadUrl:sub(-1) ~= "/" then
+    downloadUrl = downloadUrl .. "/"
+  end
+  -- Validar se a URL é absoluta (começa com http:// ou https://)
+  if not (downloadUrl:sub(1, 7) == "http://" or downloadUrl:sub(1, 8) == "https://") then
+    g_logger.error("URL de download inválida (deve começar com http:// ou https://): " .. downloadUrl)
+    return Updater.error("URL de download inválida retornada pela API. Verifique a configuração do servidor.")
+  end
+  -- Atualizar data["url"] com a URL normalizada
+  data["url"] = downloadUrl
+  g_logger.info("URL de download: " .. downloadUrl)
   if data["keepFiles"] then
     keepCurrentFiles = true
   end
-  
+
   local newFiles = false
   local finalFiles = {}
   local localFiles = g_resources.filesChecksums()
@@ -130,7 +158,7 @@ local function updateFiles(data, keepCurrentFiles)
   for file, checksum in pairs(data["files"]) do
     table.insert(finalFiles, file)
     if not localFiles[file] or localFiles[file] ~= checksum then
-      table.insert(toUpdate, {file, checksum})
+      table.insert(toUpdate, { file, checksum })
       newFiles = true
     end
   end
@@ -140,20 +168,20 @@ local function updateFiles(data, keepCurrentFiles)
     local selfChecksum = g_resources.selfChecksum()
     if selfChecksum:len() > 0 and selfChecksum ~= data["binary"]["checksum"] then
       binary = data["binary"]["file"]
-      table.insert(toUpdate, {binary, data["binary"]["checksum"]})
+      table.insert(toUpdate, { binary, data["binary"]["checksum"] })
     end
   end
-  
+
   if #toUpdate == 0 then -- nothing to update
     updaterWindow.mainProgress:setPercent(100)
     scheduledEvent = scheduleEvent(Updater.abort, 20)
     return
   end
-  
+
   -- update of some files require full client restart
   local forceRestart = false
   local reloadModules = false
-  local forceRestartPattern = {"init.lua", "corelib", "updater", "otmod"}
+  local forceRestartPattern = { "init.lua", "corelib", "updater", "otmod" }
   for _, file in ipairs(toUpdate) do
     for __, pattern in ipairs(forceRestartPattern) do
       if string.find(file[1], pattern) then
@@ -164,7 +192,7 @@ local function updateFiles(data, keepCurrentFiles)
       end
     end
   end
-  
+
   updaterWindow.status:setText(tr("Updating %i files", #toUpdate))
   updaterWindow.mainProgress:setPercent(0)
   updaterWindow.downloadProgress:setPercent(0)
@@ -175,7 +203,7 @@ local function updateFiles(data, keepCurrentFiles)
     updaterWindow.status:setText(tr("Updating client (may take few seconds)"))
     updaterWindow.mainProgress:setPercent(100)
     updaterWindow.downloadProgress:hide()
-    updaterWindow.downloadStatus:hide() 
+    updaterWindow.downloadStatus:hide()
     scheduledEvent = scheduleEvent(function()
       local restart = binary or (not loadModulesFunction and reloadModules) or forceRestart
       if newFiles then
@@ -192,7 +220,7 @@ local function updateFiles(data, keepCurrentFiles)
         end
         Updater.abort()
       end
-    end, 100)  
+    end, 100)
   end)
 end
 
@@ -221,12 +249,12 @@ end
 
 function Updater.check(args)
   if updaterWindow then return end
-  
+
   updaterWindow = g_ui.displayUI('updater')
   updaterWindow:show()
   updaterWindow:focus()
-  updaterWindow:raise()  
-  
+  updaterWindow:raise()
+
   local updateData = nil
   local function progressUpdater(value)
     removeEvent(scheduledEvent)
@@ -248,7 +276,7 @@ function Updater.check(args)
     platform = g_window.getPlatformType(),
     args = args or {}
   }, function(data, err)
-    if err then      
+    if err then
       return Updater.error(err)
     end
     updateData = data
@@ -265,7 +293,7 @@ end
 
 function Updater.changeUrl()
   removeEvent(scheduledEvent)
-  modules.client_textedit.edit(Services.updater, {title="Enter updater url", width=300}, function(newUrl)
+  modules.client_textedit.edit(Services.updater, { title = "Enter updater url", width = 300 }, function(newUrl)
     if updaterWindow and newUrl:len() > 4 then
       Services.updater = newUrl
     end
