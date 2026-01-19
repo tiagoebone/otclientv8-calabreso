@@ -353,30 +353,56 @@ function onStaminaChange(localPlayer, stamina)
 
   setSkillValue('stamina', hours .. ":" .. minutes)
 
+  local isPremiumAcc = G.characterAccount.premDays > 0
+
   --TODO not all client versions have premium time
-  if stamina > 2400 and g_game.getClientVersion() >= 1038 and localPlayer:isPremium() then
-    local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
-        tr("Now you will gain 50%% more experience")
-    setSkillPercent('stamina', percent, text, 'green')
-  elseif stamina > 2400 and g_game.getClientVersion() >= 1038 and not localPlayer:isPremium() then
-    local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
-        tr(
-        "You will not gain 50%% more experience because you aren't premium player, now you receive only 1x experience points")
-    setSkillPercent('stamina', percent, text, '#89F013')
-  elseif stamina > 2400 and g_game.getClientVersion() < 1038 then
-    local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
-        tr("If you are premium player, you will gain 50%% more experience")
-    setSkillPercent('stamina', percent, text, 'green')
-  elseif stamina <= 2400 and stamina > 840 then
-    setSkillPercent('stamina', percent, tr("You have %s hours and %s minutes left", hours, minutes), 'orange')
-  elseif stamina <= 840 and stamina > 0 then
-    local text = tr("You have %s hours and %s minutes left", hours, minutes) .. "\n" ..
-        tr("You gain only 50%% experience and you don't may gain loot from monsters")
-    setSkillPercent('stamina', percent, text, 'red')
-  elseif stamina == 0 then
-    local text = tr("You have %s hours and %s minutes left", hours, minutes) .. "\n" ..
-        tr("You don't may receive experience and loot from monsters")
-    setSkillPercent('stamina', percent, text, 'black')
+  if g_game.getClientVersion() < 1038 then
+    -- TEU CLIENT (800)
+    if isPremiumAcc and stamina > 2340 then
+      -- PREMIUM: bônus de 50% por 3 horas (42h -> 39h)
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
+          tr("Now you will gain 50%% more experience")
+      setSkillPercent('stamina', percent, text, 'green')
+    elseif (not isPremiumAcc) and stamina > 2460 then
+      -- FREE: bônus de 50% só na 1ª hora (42h -> 41h)
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
+          tr("As a free account, you will gain 50%% more experience for 1 hour")
+      setSkillPercent('stamina', percent, text, 'green')
+    elseif stamina > 840 then
+      -- sem bônus, mas acima de 14h
+      setSkillPercent('stamina', percent,
+        tr("You have %s hours and %s minutes left", hours, minutes), 'orange')
+    elseif stamina > 0 then
+      -- 0 < stamina <= 14h: penalidade
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. "\n" ..
+          tr("You gain only 50%% experience and you don't may gain loot from monsters")
+      setSkillPercent('stamina', percent, text, 'red')
+    else -- stamina == 0
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. "\n" ..
+          tr("You don't may receive experience and loot from monsters")
+      setSkillPercent('stamina', percent, text, 'black')
+    end
+  else
+    -- clients 1038+ (mantido pra compatibilidade, se quiser)
+    if localPlayer:isPremium() and stamina > 2340 then
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
+          tr("Now you will gain 50%% more experience")
+      setSkillPercent('stamina', percent, text, 'green')
+    elseif (not localPlayer:isPremium()) and stamina > 2460 then
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. '\n' ..
+          tr("As a free account, you will gain 50%% more experience for 1 hour")
+      setSkillPercent('stamina', percent, text, 'green')
+    elseif stamina > 840 then
+      setSkillPercent('stamina', percent, tr("You have %s hours and %s minutes left", hours, minutes), 'orange')
+    elseif stamina > 0 then
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. "\n" ..
+          tr("You gain only 50%% experience and you don't may gain loot from monsters")
+      setSkillPercent('stamina', percent, text, 'red')
+    else
+      local text = tr("You have %s hours and %s minutes left", hours, minutes) .. "\n" ..
+          tr("You don't may receive experience and loot from monsters")
+      setSkillPercent('stamina', percent, text, 'black')
+    end
   end
 end
 
