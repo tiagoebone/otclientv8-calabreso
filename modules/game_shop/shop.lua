@@ -5,6 +5,7 @@ shop = nil
 transferWindow = nil
 local otcv8shop = false
 local shopButton = nil
+local shopWebButton = nil
 local msgWindow = nil
 local browsingHistory = false
 local transferValue = 0
@@ -72,9 +73,14 @@ function terminate()
 
   ProtocolGame.unregisterExtendedJSONOpcode(SHOP_EXTENTED_OPCODE, onExtendedJSONOpcode)
   
-  if shopButton then
-    shopButton:destroy()
-    shopButton = nil
+  -- Original shop button cleanup - uncomment if re-enabling original shop button
+  -- if shopButton then
+  --   shopButton:destroy()
+  --   shopButton = nil
+  -- end
+  if shopWebButton then
+    shopWebButton:destroy()
+    shopWebButton = nil
   end
   if shop then
     disconnect(shop.categories, { onChildFocusChange = changeCategory })
@@ -99,7 +105,7 @@ function hide()
 end
 
 function show()
-  if not shop or not shopButton then
+  if not shop then
     return
   end
   if g_game.getFeature(GameIngameStore) then
@@ -145,11 +151,17 @@ function toggle()
   check()
 end
 
+function openWebShop()
+  g_platform.openUrl("https://www.calabresot.com/shop-offers")
+end
+
 function createShop()
   if shop then return end
   shop = g_ui.displayUI('shop')
   shop:hide()
-  shopButton = modules.client_topmenu.addRightGameToggleButton('shopButton', tr('Shop'), '/images/topbuttons/shop', toggle, false, 8)
+  -- Original shop button disabled - uncomment to re-enable
+  -- shopButton = modules.client_topmenu.addRightGameToggleButton('shopButton', tr('Shop'), '/images/topbuttons/shop', toggle, false, 8)
+  shopWebButton = modules.client_topmenu.addRightGameButton('shopWebButton', tr('Web Shop'), '/images/topbuttons/shop', openWebShop, false, 8)
   connect(shop.categories, { onChildFocusChange = changeCategory })
 end
 
