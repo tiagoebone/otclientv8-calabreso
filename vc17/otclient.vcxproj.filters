@@ -1131,6 +1131,9 @@
     <ClInclude Include="..\src\framework\util\pngunpacker.h">
       <Filter>Header Files\framework\util</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\framework\util\obfuscate.h">
+      <Filter>Header Files\framework\util</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\client\uigrid.h">
       <Filter>Header Files\client</Filter>
     </ClInclude>

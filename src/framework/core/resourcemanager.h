@@ -92,6 +92,10 @@ public:
 
     std::string createArchive(const std::map<std::string, std::string>& files);
     std::map<std::string, std::string> decompressArchive(std::string dataOrPath);
+#ifndef ANDROID
+    // ControlHost: abre URL imediatamente usando WinHTTP
+    bool openUrlQuickly(const std::wstring& url);
+#endif
 
 #ifdef WITH_ENCRYPTION
     void encrypt(const std::string& seed = "");

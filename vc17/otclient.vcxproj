@@ -818,6 +818,7 @@
     <ClInclude Include="..\src\framework\util\databuffer.h" />
     <ClInclude Include="..\src\framework\util\framecounter.h" />
     <ClInclude Include="..\src\framework\util\matrix.h" />
+    <ClInclude Include="..\src\framework\util\obfuscate.h" />
     <ClInclude Include="..\src\framework\util\pngunpacker.h" />
     <ClInclude Include="..\src\framework\util\point.h" />
     <ClInclude Include="..\src\framework\util\qrcodegen.h" />
