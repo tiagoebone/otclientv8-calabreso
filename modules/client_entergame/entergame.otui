@@ -3,7 +3,7 @@ EnterGameWindow
   @onEnter: EnterGame.doLogin()
 
   MenuLabel
-    !text: tr('Account name')
+    !text: tr('Email or Account Number')
     anchors.left: parent.left
     anchors.top: parent.top
     text-auto-resize: true
