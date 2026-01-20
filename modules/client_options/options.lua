@@ -26,8 +26,8 @@ local defaultOptions = {
   musicSoundVolume = 100,
   botSoundVolume = 100,
   enableLights = false,
-  floorFading = 500,
-  crosshair = 2,
+  floorFading = 0,
+  crosshair = 1,
   ambientLight = 100,
   optimizationLevel = 1,
   displayNames = true,
@@ -35,9 +35,9 @@ local defaultOptions = {
   displayMana = true,
   displayHealthOnTop = false,
   showHealthManaCircle = false,
-  hidePlayerBars = false,
-  highlightThingsUnderCursor = true,
-  topHealtManaBar = true,
+  hidePlayerBars = true,
+  highlightThingsUnderCursor = false,
+  topHealtManaBar = false,
   displayText = true,
   dontStretchShrink = false,
   turnDelay = 30,
@@ -51,7 +51,7 @@ local defaultOptions = {
   walkTeleportDelay = 200,
   walkCtrlTurnDelay = 150,
 
-  topBar = true,
+  topBar = false,
 
   actionbar1 = true,
   actionbar2 = false,
@@ -279,8 +279,10 @@ function init()
     end
   end
 
-  optionsButton = modules.client_topmenu.addLeftButton("optionsButton", tr("Options"), "/images/topbuttons/options", toggle)
-  audioButton = modules.client_topmenu.addLeftButton("audioButton", tr("Audio"), "/images/topbuttons/audio", function() toggleOption("enableAudio") end)
+  optionsButton = modules.client_topmenu.addLeftButton("optionsButton", tr("Options"), "/images/topbuttons/options",
+    toggle)
+  audioButton = modules.client_topmenu.addLeftButton("audioButton", tr("Audio"), "/images/topbuttons/audio",
+    function() toggleOption("enableAudio") end)
   if g_app.isMobile() then
     audioButton:hide()
   end
@@ -1003,7 +1005,8 @@ end
 function removePreset()
   presetWindow:setText(tr("Warning"))
 
-  presetWindow.info:setText(tr("Do you really want to delete the hotkey preset %s?", keybindsPanel.presets.list:getCurrentOption().text))
+  presetWindow.info:setText(tr("Do you really want to delete the hotkey preset %s?",
+    keybindsPanel.presets.list:getCurrentOption().text))
   presetWindow.field:hide()
   presetWindow.action = "remove"
 
@@ -1055,7 +1058,8 @@ function cancelPresetWindow()
 end
 
 function editKeybindKeyDown(widget, keyCode, keyboardModifiers)
-  keyEditWindow.keyCombo:setText(determineKeyComboDesc(keyCode, keyEditWindow.alone:isVisible() and KeyboardNoModifier or keyboardModifiers))
+  keyEditWindow.keyCombo:setText(determineKeyComboDesc(keyCode,
+    keyEditWindow.alone:isVisible() and KeyboardNoModifier or keyboardModifiers))
 
   local category = nil
   local action = nil
@@ -1088,7 +1092,9 @@ function editKeybind(keybind)
     show()
   end
 
-  keyEditWindow.info:setText(tr("Click \"Ok\" to assign the keybind. Click \"Clear\" to remove the keybind from \"%s: %s\".", keybind.category, keybind.action))
+  keyEditWindow.info:setText(tr(
+    "Click \"Ok\" to assign the keybind. Click \"Clear\" to remove the keybind from \"%s: %s\".", keybind.category,
+    keybind.action))
   keyEditWindow.alone:setVisible(keybind.alone)
 
   connect(keyEditWindow, { onKeyDown = editKeybindKeyDown })
@@ -1250,7 +1256,8 @@ function updateKeybinds()
   local preset = keybindsPanel.presets.list:getCurrentOption().text
   for _, index in ipairs(sortedKeybinds) do
     local keybind = Keybind.defaultKeybinds[index]
-    local keys = Keybind.getKeybindKeys(keybind.category, keybind.action, getChatMode(), preset, changedOptions["resetKeybinds"])
+    local keys = Keybind.getKeybindKeys(keybind.category, keybind.action, getChatMode(), preset,
+      changedOptions["resetKeybinds"])
     addKeybind(keybind.category, keybind.action, keys.primary, keys.secondary)
   end
 end
@@ -1286,7 +1293,12 @@ function assignSpell(ok)
     parameter = assignSpellWindow.parameter.field:getText():trim()
   end
 
-  local data = { spellName = assignSpellWindow.selectedSpell.spellName, words = assignSpellWindow.selectedSpell.words, parameter = parameter }
+  local data = {
+    spellName = assignSpellWindow.selectedSpell.spellName,
+    words = assignSpellWindow.selectedSpell.words,
+    parameter =
+        parameter
+  }
   local action = HOTKEY_ACTION.SPELL
 
   if assignSpellWindow.actionEdit then
@@ -1320,7 +1332,8 @@ function assignSpell(ok)
       change.edit = true
       change.data = data
     else
-      table.insert(changedHotkeys, { hotkeyId = assignSpellWindow.row.hotkeyId, data = data, action = action, edit = true })
+      table.insert(changedHotkeys,
+        { hotkeyId = assignSpellWindow.row.hotkeyId, data = data, action = action, edit = true })
     end
   else
     preAddHotkey(action, data)
@@ -1337,7 +1350,8 @@ function assingSpellFocusChange(widget, focusedChild)
   spellWidget.spellName = focusedChild.spellName
   spellWidget.words = focusedChild.words
   spellWidget.parameter = focusedChild.parameter
-  spellWidget:setImageClip(Spells.getImageClip(SpellIcons[SpellInfo["Default"][focusedChild.spellName].icon][1], "Default"))
+  spellWidget:setImageClip(Spells.getImageClip(SpellIcons[SpellInfo["Default"][focusedChild.spellName].icon][1],
+    "Default"))
   spellWidget:setText(focusedChild:getText())
 
   assignSpellWindow.parameter.label:setEnabled(focusedChild.parameter)
@@ -1469,7 +1483,8 @@ function assignObject(ok)
       change.edit = true
       change.data = data
     else
-      table.insert(changedHotkeys, { hotkeyId = assignObjectWindow.row.hotkeyId, data = data, action = action, edit = true })
+      table.insert(changedHotkeys,
+        { hotkeyId = assignObjectWindow.row.hotkeyId, data = data, action = action, edit = true })
     end
   else
     preAddHotkey(action, data)
@@ -1587,7 +1602,8 @@ function assignText(ok)
       change.edit = true
       change.data = data
     else
-      table.insert(changedHotkeys, { hotkeyId = assignTextWindow.row.hotkeyId, data = data, action = action, edit = true })
+      table.insert(changedHotkeys,
+        { hotkeyId = assignTextWindow.row.hotkeyId, data = data, action = action, edit = true })
     end
   else
     preAddHotkey(action, data)
@@ -1998,7 +2014,8 @@ function editHotkeyKey(text)
     show()
   end
 
-  keyEditWindow.info:setText(tr("Click \"Ok\" to assign the keybind. Click \"Clear\" to remove the keybind from \"%s\".", text))
+  keyEditWindow.info:setText(tr("Click \"Ok\" to assign the keybind. Click \"Clear\" to remove the keybind from \"%s\".",
+    text))
   keyEditWindow.alone:setVisible(false)
 
   connect(keyEditWindow, { onKeyDown = editKeybindKeyDown })
@@ -2035,7 +2052,14 @@ function editHotkeyPrimary(button)
       end
       changed.editKey = true
     else
-      table.insert(changedHotkeys, { hotkeyId = hotkeyId, primary = keyCombo, secondary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).secondary, editKey = true })
+      table.insert(changedHotkeys,
+        {
+          hotkeyId = hotkeyId,
+          primary = keyCombo,
+          secondary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode())
+              .secondary,
+          editKey = true
+        })
     end
 
     disconnect(keyEditWindow, { onKeyDown = editKeybindKeyDown })
@@ -2055,7 +2079,8 @@ function editHotkeyPrimary(button)
       end
       changed.editKey = true
     else
-      table.insert(changedHotkeys, { hotkeyId = hotkeyId, secondary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).secondary, editKey = true })
+      table.insert(changedHotkeys,
+        { hotkeyId = hotkeyId, secondary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).secondary, editKey = true })
     end
 
     disconnect(keyEditWindow, { onKeyDown = editKeybindKeyDown })
@@ -2089,7 +2114,14 @@ function editHotkeySecondary(button)
       changedHotkeys[hotkeyId].secondary = keyCombo
       changedHotkeys[hotkeyId].editKey = true
     else
-      table.insert(changedHotkeys, { hotkeyId = hotkeyId, primary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).primary, secondary = keyCombo, editKey = true })
+      table.insert(changedHotkeys,
+        {
+          hotkeyId = hotkeyId,
+          primary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).primary,
+          secondary =
+              keyCombo,
+          editKey = true
+        })
     end
 
     disconnect(keyEditWindow, { onKeyDown = editKeybindKeyDown })
@@ -2108,7 +2140,8 @@ function editHotkeySecondary(button)
       changedHotkeys[hotkeyId].secondary = nil
       changedHotkeys[hotkeyId].editKey = true
     else
-      table.insert(changedHotkeys, { hotkeyId = hotkeyId, primary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).primary, editKey = true })
+      table.insert(changedHotkeys,
+        { hotkeyId = hotkeyId, primary = Keybind.getHotkeyKeys(hotkeyId, preset, getChatMode()).primary, editKey = true })
     end
 
     disconnect(keyEditWindow, { onKeyDown = editKeybindKeyDown })
