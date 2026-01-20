@@ -1,0 +1,10 @@
+Module
+  name: client_help
+  description: Help window with links to game guides
+  author: calabreso
+  scripts: [ help ]
+  sandboxed: true
+  @onLoad: init()
+  @onUnload: terminate()
+
+

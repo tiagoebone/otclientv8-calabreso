@@ -1,0 +1,102 @@
+MainWindow
+  id: helpWindow
+  !text: tr('Help')
+  size: 450 320
+  @onEscape: modules.client_help.hide()
+
+  Panel
+    id: buttonsPanel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: closeButton.top
+    margin: 10
+    margin-bottom: 5
+    layout:
+      type: grid
+      num-columns: 4
+      cell-spacing: 5
+      cell-size: 100 30
+
+    Button
+      id: autoLootButton
+      width: 100
+      !text: tr('Auto Loot')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/auto-loot')
+
+    Button
+      id: bagLootButton
+      width: 100
+      !text: tr('Bag Loot')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/bagloot')
+
+    Button
+      id: bankButton
+      width: 100
+      !text: tr('Bank')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/bank')
+
+    Button
+      id: bestiaryButton
+      width: 100
+      !text: tr('Bestiary')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/bestiary')
+
+    Button
+      id: changeVocationButton
+      width: 100
+      !text: tr('Change Vocation')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/change-vocation')
+
+    Button
+      id: deathRecoverButton
+      width: 100
+      !text: tr('Death Recover')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/death-recover')
+
+    Button
+      id: extraInformationButton
+      width: 100
+      !text: tr('Extra Information')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/extra-information')
+
+    Button
+      id: findNpcButton
+      width: 100
+      !text: tr('Find NPC')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/find-npc')
+
+    Button
+      id: forgeButton
+      width: 100
+      !text: tr('Forge')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/forge')
+
+    Button
+      id: gameItemsButton
+      width: 100
+      !text: tr('Game Items')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/game-items?type=armors')
+
+    Button
+      id: housesButton
+      width: 100
+      !text: tr('Houses')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/houses')
+
+    Button
+      id: mapButton
+      width: 100
+      !text: tr('Map')
+      @onClick: modules.client_help.openLink('https://www.calabresot.com/home?map=true')
+
+  Button
+    id: closeButton
+    !text: tr('Close')
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    margin-bottom: 10
+    margin-right: 10
+    size: 60 30
+    @onClick: modules.client_help.hide()
+

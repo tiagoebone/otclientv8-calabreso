@@ -7,6 +7,7 @@ local otcv8shop = false
 local shopButton = nil
 local shopWebButton = nil
 local tradeOfflineButton = nil
+local helpButton = nil
 local msgWindow = nil
 local browsingHistory = false
 local transferValue = 0
@@ -86,6 +87,10 @@ function terminate()
   if tradeOfflineButton then
     tradeOfflineButton:destroy()
     tradeOfflineButton = nil
+  end
+  if helpButton then
+    helpButton:destroy()
+    helpButton = nil
   end
   if shop then
     disconnect(shop.categories, { onChildFocusChange = changeCategory })
@@ -176,6 +181,13 @@ function createShop()
   -- Note: Replace '/images/topbuttons/inventory' with '/images/topbuttons/tradeoffline' when you add a dollar sign/money icon
   tradeOfflineButton = modules.client_topmenu.addRightGameButton('tradeOfflineButton', tr('Trade Offline'),
     '/images/topbuttons/inventory', openTradeOffline, false, 9)
+  -- Help button - copy of Trade Offline button style, opens help window
+  -- helpButton = modules.client_topmenu.addRightGameButton('helpButton', tr('Help'), '/images/topbuttons/inventory',
+  --   function()
+  --     if modules.client_help then
+  --       modules.client_help.toggle()
+  --     end
+  --   end, false, 10)
   connect(shop.categories, { onChildFocusChange = changeCategory })
 end
 
