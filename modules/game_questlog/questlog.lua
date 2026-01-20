@@ -19,7 +19,8 @@ function init()
   
   if not g_app.isMobile() then
     questLogButton = modules.client_topmenu.addLeftGameButton('questLogButton', tr('Quest Log'), '/images/topbuttons/questlog', function() g_game.requestQuestLog() end, false, 8)
-    questTrackerButton = modules.client_topmenu.addLeftGameButton('questTrackerButton', tr('Quest Tracker'), '/images/topbuttons/quest_tracker', toggle, false, 9)
+    -- Quest Tracker button disabled - uncomment to re-enable
+    -- questTrackerButton = modules.client_topmenu.addLeftGameButton('questTrackerButton', tr('Quest Tracker'), '/images/topbuttons/quest_tracker', toggle, false, 9)
   end
   
   connect(g_game, { onQuestLog = onGameQuestLog,
@@ -43,9 +44,10 @@ function terminate()
   if questLogButton then
     questLogButton:destroy()
   end
-  if questTrackerButton then
-    questTrackerButton:destroy()
-  end
+  -- Quest Tracker button cleanup - uncomment if re-enabling Quest Tracker
+  -- if questTrackerButton then
+  --   questTrackerButton:destroy()
+  -- end
   
   if refreshEvent then
     removeEvent(refreshEvent)
