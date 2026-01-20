@@ -251,6 +251,14 @@ function Updater.check(args)
   if updaterWindow then return end
 
   updaterWindow = g_ui.displayUI('updater')
+
+  -- Definir texto de aviso em inglês
+  local warningLabel = updaterWindow:getChildById('warningLabel')
+  if warningLabel then
+    warningLabel:setText(
+    "Warning: If you cancel and do not download the update, the game may present bugs or failures, hindering your experience.")
+  end
+
   updaterWindow:show()
   updaterWindow:focus()
   updaterWindow:raise()

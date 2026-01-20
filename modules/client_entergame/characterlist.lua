@@ -288,10 +288,12 @@ function CharacterList.create(characters, account, otui)
     widget.worldHost = characterInfo.worldIp
     widget.worldPort = characterInfo.worldPort
 
-    connect(widget, { onDoubleClick = function()
-      CharacterList.doLogin()
-      return true
-    end })
+    connect(widget, {
+      onDoubleClick = function()
+        CharacterList.doLogin()
+        return true
+      end
+    })
 
     if i == 1 or (g_settings.get('last-used-character') == widget.characterName and g_settings.get('last-used-world') == widget.worldName) then
       focusLabel = widget
@@ -384,27 +386,86 @@ function CharacterList.isVisible()
   return false
 end
 
+-- Variável para armazenar informações de login pendente após verificação de atualização
+local pendingLoginInfo = nil
+local updaterAbortIntercepted = false
+
 function CharacterList.doLogin()
   removeEvent(autoReconnectEvent)
   autoReconnectEvent = nil
 
   local selected = characterList:getFocusedChild()
-  if selected then
-    local charInfo = {
-      worldHost = selected.worldHost,
-      worldPort = selected.worldPort,
-      worldName = selected.worldName,
-      characterName = selected.characterName
-    }
-    charactersWindow:hide()
-    if loginEvent then
-      removeEvent(loginEvent)
-      loginEvent = nil
-    end
-    tryLogin(charInfo)
-  else
+  if not selected then
     displayErrorBox(tr('Error'), tr('You must select a character to login!'))
+    return
   end
+
+  -- Verificar atualização antes de fazer login (similar à verificação no init.lua)
+  if type(Services.updater) == 'string' and Services.updater:len() > 4
+      and g_resources.isLoadedFromArchive() and g_modules.getModule("updater") then
+    -- Garantir que o módulo updater está carregado
+    if not Updater then
+      g_modules.ensureModuleLoaded("updater")
+    end
+
+    if Updater then
+      -- Salvar informações do personagem selecionado para usar após verificação
+      pendingLoginInfo = {
+        worldHost = selected.worldHost,
+        worldPort = selected.worldPort,
+        worldName = selected.worldName,
+        characterName = selected.characterName
+      }
+
+      -- Interceptar Updater.abort apenas uma vez para continuar com login quando não houver atualização
+      if not updaterAbortIntercepted then
+        updaterAbortIntercepted = true
+        local originalAbort = Updater.abort
+        Updater.abort = function()
+          -- Chamar função original primeiro
+          if originalAbort then
+            originalAbort()
+          end
+
+          -- Se há login pendente, continuar com login após fechar janela do updater
+          if pendingLoginInfo then
+            local charInfo = pendingLoginInfo
+            pendingLoginInfo = nil
+
+            addEvent(function()
+              -- Verificar se ainda estamos na tela de seleção de personagem
+              if CharacterList.isVisible() then
+                charactersWindow:hide()
+                if loginEvent then
+                  removeEvent(loginEvent)
+                  loginEvent = nil
+                end
+                tryLogin(charInfo)
+              end
+            end, 100)
+          end
+        end
+      end
+
+      -- Verificar atualização
+      Updater.check()
+      return -- Não continuar com login agora, será feito pelo callback
+    end
+  end
+
+  -- Se não deve verificar atualização, fazer login normalmente
+  local charInfo = {
+    worldHost = selected.worldHost,
+    worldPort = selected.worldPort,
+    worldName = selected.worldName,
+    characterName = selected.characterName
+  }
+  charactersWindow:hide()
+  if loginEvent then
+    removeEvent(loginEvent)
+    loginEvent = nil
+  end
+  tryLogin(charInfo)
 end
 
 function CharacterList.destroyLoadBox()

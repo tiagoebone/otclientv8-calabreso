@@ -45,6 +45,17 @@ StaticMainWindow
     $!mobile:
       visible: false
 
+  Label
+    id: warningLabel
+    text-align: center
+    text-auto-resize: true
+    text-wrap: true
+    margin-left: 10
+    margin-right: 10
+    margin-bottom: 10
+    margin-top: 5
+    color: #ffaa00
+
   Button
     margin-left: 90
     margin-right: 90
