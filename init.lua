@@ -1,6 +1,7 @@
 -- CONFIG
 APP_NAME = "Calabresot"  -- important, change it, it's name for config dir and files in appdata
 APP_VERSION = 1341       -- client version for updater and login to identify outdated client
+ENABLE_LOG_FILE = false  -- enable/disable log file creation (true = enabled, false = disabled)
 DEFAULT_LAYOUT = "retro" -- on android it's forced to "mobile", check code bellow
 
 -- If you don't use updater or other service, set it to updater = ""

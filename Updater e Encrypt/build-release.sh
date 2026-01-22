@@ -35,7 +35,7 @@ echo "✅ Cópia criada."
 # --- 2) dentro da cópia: encrypt ---
 echo "🔐 Criptografando dentro da cópia..."
 # Senha de criptografia (altere esta senha se necessário)
-ENCRYPT_PASSWORD="K7#mP9@xQ2$vL4&nR8!wT5%zY3^bN6"
+ENCRYPT_PASSWORD='K7#mP9@xQ2$vL4&nR8!wT5%zY3^bN6'
 pushd "$WORK_DIR" >/dev/null
 chmod +x "./$EXE_PATH" 2>/dev/null || true
 "./$EXE_PATH" --encrypt "$ENCRYPT_PASSWORD"

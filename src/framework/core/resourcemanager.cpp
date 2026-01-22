@@ -306,6 +306,71 @@ std::string ResourceManager::getCompactName() {
     return "otclientv8";
 }
 
+bool ResourceManager::isLogFileEnabled() {
+    std::string fileData;
+    if (loadDataFromSelf()) {
+        try {
+            fileData = readFileContents(INIT_FILENAME);
+        } catch (...) {
+            fileData = "";
+        }
+        unmountMemoryData();
+    }
+
+#ifndef ANDROID
+    std::vector<std::string> possiblePaths = { g_platform.getCurrentDir() };
+    const char* baseDir = PHYSFS_getBaseDir();
+    if (baseDir)
+        possiblePaths.push_back(baseDir);
+
+    if (fileData.empty()) {
+        try {
+            for (const std::string& dir : possiblePaths) {
+                if (!PHYSFS_mount(dir.c_str(), NULL, 0))
+                    continue;
+
+                if (PHYSFS_exists(INIT_FILENAME.c_str())) {
+                    fileData = readFileContents(INIT_FILENAME);
+                    PHYSFS_unmount(dir.c_str());
+                    break;
+                }
+                PHYSFS_unmount(dir.c_str());
+            }
+        } catch (...) {
+            fileData = "";
+        }
+    }
+
+    if (fileData.empty()) {
+        try {
+            for (const std::string& dir : possiblePaths) {
+                std::string path = dir + "/data.zip";
+                if (!PHYSFS_mount(path.c_str(), NULL, 0))
+                    continue;
+
+                if (PHYSFS_exists(INIT_FILENAME.c_str())) {
+                    fileData = readFileContents(INIT_FILENAME);
+                    PHYSFS_unmount(path.c_str());
+                    break;
+                }
+                PHYSFS_unmount(path.c_str());
+            }
+        } catch (...) {}
+    }
+#endif
+
+    std::smatch regex_match;
+    // Procura por ENABLE_LOG_FILE = true ou ENABLE_LOG_FILE = false
+    if (std::regex_search(fileData, regex_match, std::regex("ENABLE_LOG_FILE\\s*=\\s*(true|false)"))) {
+        if (regex_match.size() == 2) {
+            std::string value = regex_match[1].str();
+            return (value == "true");
+        }
+    }
+    // Por padrão, retorna true para manter o comportamento atual
+    return true;
+}
+
 bool ResourceManager::loadDataFromSelf(bool unmountIfMounted) {
     std::shared_ptr<std::vector<uint8_t>> data = nullptr;
 #ifdef ANDROID
@@ -406,6 +471,11 @@ std::string ResourceManager::readFileContents(const std::string& fileName, bool 
 
     // skip decryption for bot configs
     if (fullPath.find("/bot/") != std::string::npos) {
+        return buffer;
+    }
+
+    // skip decryption for create_data_zip.lua (used by build script, not encrypted)
+    if (fileName.find("create_data_zip.lua") != std::string::npos || fullPath.find("create_data_zip.lua") != std::string::npos) {
         return buffer;
     }
 

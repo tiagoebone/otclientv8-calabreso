@@ -39,6 +39,7 @@ public:
     bool setup();
 
     std::string getCompactName();
+    bool isLogFileEnabled();
     bool loadDataFromSelf(bool unmountIfMounted = false);
 
     bool fileExists(const std::string& fileName);
