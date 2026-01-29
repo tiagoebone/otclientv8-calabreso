@@ -88,14 +88,133 @@ MiniWindow
       id: capacity
       height: 15
       SkillNameLabel
-        !text: tr('Capacity')
+        !text: tr('Total Capacity')
       SkillValueLabel
 
     SkillButton
       id: speed
       height: 15
       SkillNameLabel
-        !text: tr('Speed')
+        !text: tr('Total Speed')
+      SkillValueLabel
+
+    SkillButton
+      id: extraSpeed
+      height: 15
+      SkillNameLabel
+        !text: tr('Extra Speed')
+      SkillValueLabel
+
+    SkillButton
+      id: manaleech
+      height: 15
+      SkillNameLabel
+        !text: tr('Mana Leech')
+      SkillValueLabel
+
+    SkillButton
+      id: lifeleech
+      height: 15
+      SkillNameLabel
+        !text: tr('Life Leech')
+      SkillValueLabel
+
+    SkillButton
+      id: magicLevelPoints
+      height: 15
+      SkillNameLabel
+        !text: tr('Magic Level Points')
+      SkillValueLabel
+
+    SkillButton
+      id: skillSword
+      height: 15
+      SkillNameLabel
+        !text: tr('Sword Points')
+      SkillValueLabel
+
+    SkillButton
+      id: skillAxe
+      height: 15
+      SkillNameLabel
+        !text: tr('Axe Points')
+      SkillValueLabel
+
+    SkillButton
+      id: skillClub
+      height: 15
+      SkillNameLabel
+        !text: tr('Club Points')
+      SkillValueLabel
+
+    SkillButton
+      id: skillDistance
+      height: 15
+      SkillNameLabel
+        !text: tr('Distance Points')
+      SkillValueLabel
+
+    SkillButton
+      id: skillShield
+      height: 15
+      SkillNameLabel
+        !text: tr('Shield Points')
+      SkillValueLabel
+
+    SkillButton
+      id: extraReflect
+      height: 15
+      SkillNameLabel
+        !text: tr('Reflect Damage')
+      SkillValueLabel
+
+    SkillButton
+      id: extraManaPercent
+      height: 15
+      SkillNameLabel
+        !text: tr('Extra Mana')
+      SkillValueLabel
+
+    SkillButton
+      id: extraHealthPercent
+      height: 15
+      SkillNameLabel
+        !text: tr('Extra Health')
+      SkillValueLabel
+
+    SkillButton
+      id: absorbPercentPhysical
+      height: 15
+      SkillNameLabel
+        !text: tr('Physical Absorb')
+      SkillValueLabel
+
+    SkillButton
+      id: absorbPercentDeath
+      height: 15
+      SkillNameLabel
+        !text: tr('Death Absorb')
+      SkillValueLabel
+
+    SkillButton
+      id: absorbPercentFire
+      height: 15
+      SkillNameLabel
+        !text: tr('Fire Absorb')
+      SkillValueLabel
+
+    SkillButton
+      id: absorbPercentEnergy
+      height: 15
+      SkillNameLabel
+        !text: tr('Energy Absorb')
+      SkillValueLabel
+
+    SkillButton
+      id: absorbPercentEarth
+      height: 15
+      SkillNameLabel
+        !text: tr('Earth Absorb')
       SkillValueLabel
 
     SkillButton
